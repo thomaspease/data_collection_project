@@ -90,36 +90,68 @@ class Scraper:
       json.dump(dict, fp, indent=4)
 
 class RightMoveScraper(Scraper):
+  '''
+  A child class of the Scraper class, adding methods specific to scraping data from the Rightmove commercial property advertisment pages
+
+  Attributes:
+    See help(Scraper) for attributes
+  '''
   def __init__(self):
     super.__init__()
 
   def get_property_details(self):
+    '''
+    A function which gets details from a Rightmove commercial property advertisment
+
+    Returns
+      prop_data (dict): the data which has been scraped, including:
+        location (list): the coordinates of the property
+        images (list): the urls of the property images
+        sq_ft (int): the sq ft of the property, if listed
+        price (int): the price, in £, of the property
+        description (str): the property's description
+        uuid (str): a stringified UUID4 identifier
+
+      prop_id (str): the unique id of the property, taken from Rightmove's own id for the property in question
+    '''
     def get_location():
-      location_str = self.driver.find_element(By.XPATH, '//*[@class="_1kck3jRw2PGQSOEy3Lihgp"]/img').get_attribute('src') #Gets URL of map displaying the location, which has the coordinates
+      # Gets URL of map displaying the location, which has the coordinates
+      location_str = self.driver.find_element(By.XPATH, '//*[@class="_1kck3jRw2PGQSOEy3Lihgp"]/img').get_attribute('src') 
+      # Chops up the URL to leave just the values for longitude and latitude
       coord_str = location_str.split('latitude=')[1].split('&longitude=')
       coord_str[1] = coord_str[1].split('&signature')[0]
+      # Converts the L&L from str to float
       coord_floats = [float(x) for x in coord_str]
       return coord_floats
 
     def get_images():
-      collage = self.driver.find_element(By.XPATH, '//*[@class="yyidGoi1pN3HEaahsw3bi"]/a')
-      self.driver.get(collage.get_attribute('href'))
+      # Gets URL for property image gallery 
+      gallery = self.driver.find_element(By.XPATH, '//*[@class="yyidGoi1pN3HEaahsw3bi"]/a')
+      self.driver.get(gallery.get_attribute('href'))
+      # Goes to image gallery and waits for img elements (containing url filepaths) to load
       container = WebDriverWait(self.driver, 5).until(EC.presence_of_all_elements_located((By.XPATH, '//*[@class="_2BEYToQ5mjPuC5vD8izBf0 oimOnSwjvoYo82ZTqOaXp"]/img')))
+      # Compiles the urls into a list, and then returns to property page
       img_list = [imgs.get_attribute('src') for imgs in container]
       self.driver.back()
       return img_list
   
+    # Wrapped by error handler as sq ft often not listed
     @handle_nosuch_and_value_error
     def get_sq_ft():
       sq_ft = int(self.driver.find_element(By.XPATH, '//*[@class="_1hV1kqpVceE9m-QrX_hWDN  "]').text.replace(' sq. ft.', '').replace(',', ''))
       return sq_ft
 
+    # Wrapped by error handler as price sometimes not listed (e.g. 'POA')
     @handle_nosuch_and_value_error
     def get_price():
       price = int(self.driver.find_element(By.XPATH, '//*[@class="_1gfnqJ3Vtd1z40MlC0MzXu"]').text.replace('£', '').replace(',', ''))
       return price
       
-    description = self.driver.find_element(By.XPATH, '//*[contains(@class, "STw8udCxUaBUMfOOZu0iL")]').text
+    def get_description():
+      description = self.driver.find_element(By.XPATH, '//*[contains(@class, "STw8udCxUaBUMfOOZu0iL")]').text
+      return description
+
+
     url = self.driver.current_url
     prop_id = url.split('https://www.rightmove.co.uk/properties/')[1].split('#/')[0] #Chops up the URL to just have the id
 
@@ -127,6 +159,7 @@ class RightMoveScraper(Scraper):
     img_list = get_images()
     sq_ft = get_sq_ft()
     location = get_location()
+    description = get_description()
     uuid1 = str(uuid.uuid4())
 
     prop_data = {
@@ -141,21 +174,24 @@ class RightMoveScraper(Scraper):
     return prop_id, prop_data
 
 if __name__ == "__main__":
-  # start_url='https://www.rightmove.co.uk/commercial-property-for-sale/find.html?locationIdentifier=USERDEFINEDAREA%5E%7B%22polylines%22%3A%22q_nuHkpdHn%7BuEn%7Bim%40a~%7BMurf%40%7D%7BpMcb%60DyltKh%7CpGah%7DLmmbF%60br%40otnN%7C~aGaj~FnpjNitcA%60pfN_%7DvSxoaHh~yC%22%7D&maxPrice=1000000&sortType=2&propertyTypes=land%2Ccommercial-development%2Cindustrial-development%2Cresidential-development%2Cfarm%2Cdistribution-warehouse%2Cfactory%2Cheavy-industrial%2Cindustrial-park%2Clight-industrial%2Cshowroom%2Cstorage%2Ctrade-counter%2Cwarehouse%2Coffice%2Cserviced-office%2Cbusiness-park&mustHave=&dontShow=&furnishTypes=&areaSizeUnit=sqft&keywords='
+  start_url='https://www.rightmove.co.uk/commercial-property-for-sale/find.html?locationIdentifier=USERDEFINEDAREA%5E%7B%22polylines%22%3A%22q_nuHkpdHn%7BuEn%7Bim%40a~%7BMurf%40%7D%7BpMcb%60DyltKh%7CpGah%7DLmmbF%60br%40otnN%7C~aGaj~FnpjNitcA%60pfN_%7DvSxoaHh~yC%22%7D&maxPrice=1000000&sortType=2&propertyTypes=land%2Ccommercial-development%2Cindustrial-development%2Cresidential-development%2Cfarm%2Cdistribution-warehouse%2Cfactory%2Cheavy-industrial%2Cindustrial-park%2Clight-industrial%2Cshowroom%2Cstorage%2Ctrade-counter%2Cwarehouse%2Coffice%2Cserviced-office%2Cbusiness-park&mustHave=&dontShow=&furnishTypes=&areaSizeUnit=sqft&keywords='
   cookies_alert_xpath='//*[@class="optanon-allow-all accept-cookies-button"]'
   next_page_xpath='//*[@data-test="pagination-next"]'
   link_element_xpath = '//a[@class="propertyCard-link property-card-updates"]'
-  start_url='https://www.rightmove.co.uk/properties/111775718#/?channel=COM_BUY' 
+  # start_url='https://www.rightmove.co.uk/properties/111775718#/?channel=COM_BUY' FOR TESTING
   
+  # Initialise webdriver, go to property list, accept cookies
   scraper = RightMoveScraper(start_url, cookies_alert_xpath, next_page_xpath)
   scraper.driver.get(scraper.start_url)
   scraper.find_and_click(scraper.cookies_alert_xpath, 1, False)
-  scraper.log_property_details()
   
-  for pages in range(10):
+  # Scrape individual property links from as many pages as desired
+  pages_to_scrape = 10
+  for pages in range(pages_to_scrape):
     scraper.get_and_store_links_from_list(scraper.link_element_xpath, scraper.link_list)
     scraper.find_and_click(scraper.next_page_xpath, 0.5)
 
+  # For each property in the list which has just been scraped, go to that page, scrape the data, and add it to a dictionary
   for link in scraper.link_list:
     scraper.driver.get(link)
     time.sleep(0.5)
@@ -163,7 +199,3 @@ if __name__ == "__main__":
     scraper.add_data_to_dict(scraper.scraped_data, prop_id, prop_data)
 
   scraper.save_dictionary(scraper.scraped_data, 'sample.json')
-
-  # Blair questions
-  # Should I make loc_details a seperate class or no?
-  # What tests
