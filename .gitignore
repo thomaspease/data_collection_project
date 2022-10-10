@@ -1,4 +1,5 @@
-zoopla.py
 .DS_Store
-todo.txt
+*.txt
 __pycache__
+data/*
+side_bits/*
