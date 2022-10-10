@@ -17,7 +17,7 @@ To run the scraper, simply run the file `rightmove.py`
 ## Features
 
 - The parent class `Scraper` is website agnostic
-- The child class `Rightmove scraper` contains methods specifically for scraping data from commercial property adverts on Rightmove.co.uk.
+- The child class `RightmoveScraper` contains methods specifically for scraping data from commercial property adverts on Rightmove.co.uk.
 - The data is exported to a .json file
 
 ## Configuration

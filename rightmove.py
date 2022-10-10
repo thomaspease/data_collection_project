@@ -92,7 +92,7 @@ class Scraper:
     with open(name, "w") as fp:
       json.dump(dict, fp, indent=4)
 
-class RightMoveScraper(Scraper):
+class RightmoveScraper(Scraper):
   '''
   A child class of the Scraper class, adding methods specific to scraping data from the Rightmove commercial property advertisment pages
 
