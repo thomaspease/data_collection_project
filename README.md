@@ -1,9 +1,34 @@
-## Data collection project
+# Data collection project
 
-## Milestone 3
+A web scraper that uses Selenium to scrape data from websites, particularly configured to scrape data on commercial property from Rightmove.
 
-I have chosen Rightmove as my website, as I am interested in the property market. I would like to particularly focus on commercial properties.
+## How to set up
 
-In this Milestone I have built a scraper class, which uses selenium. Thus far I have built functions to accept the cookies popup, go to the next page, and gather the URLs of the properties listed on a page.
+Ensure that you have Miniconda installed on your device (https://docs.conda.io/en/latest/miniconda.html). Create a project environment from the config file, and make sure that it is activated.
 
-## Milestone 4
+```C
+conda env create -f environment.yml -n new-conda-environment
+
+conda activate new-conda-environment
+```
+
+To run the scraper, simply run the file `rightmove.py`
+
+## Features
+
+- The parent class `Scraper` is website agnostic
+- The child class `Rightmove scraper` contains methods specifically for scraping data from commercial property adverts on Rightmove.co.uk.
+- The data is exported to a .json file
+
+## Configuration
+
+There are two important configuration settings, found within the `if __name__ == "__main__":` block:
+
+- `start_url` is the page that the scraper will begin on. By going on Rightmove and searching for properties with particular characteristics (e.g. in London, under £1 million), you can then replace the URL.
+- `pages_to_scrape` how many pages the scraper will grab links from
+
+## TODOs
+
+[ ] Finish unit tests
+[ ] Push data to an RDS database SQLAlchemy and PostgreSQL
+[ ] Containerise using Docker and push to EC2 instance
