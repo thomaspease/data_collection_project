@@ -1,8 +1,11 @@
 from sqlalchemy import create_engine
 import pandas as pd
+import boto3
 import json
+import requests
+import shutil
 
-class Upserter():
+class RDSUpserter():
   def __init__(self):
     DATABASE_TYPE = 'postgresql'
     DBAPI = 'psycopg2'
@@ -27,3 +30,25 @@ class Upserter():
       print('Data upserted')
     except:
       print('Data not upserted')
+
+class S3Upserter():
+  def __init__(self):
+    self.s3 = boto3.resource('s3')
+  
+  def upsert_json_from_data_folder(self, name):  
+    try:
+      self.s3.meta.client.upload_file(f'data/data_{name}.json', 'rightmove-scraper', f'data_{name}.json')
+      print('Raw data pushed to S3')
+    except:
+      print('Raw data not pushed to S3')
+  
+  def get_image_and_upsert(self, url, name):
+    res = requests.get(url, stream = True)
+
+    if res.status_code == 200:
+      self.s3.meta.client.upload_fileobj(res.raw, 'rightmove-scraper', name)
+    else:
+      print('Image couldn\'t be uploaded')
+
+  def dl_image(self):
+    self.s3.meta.client.download_file('rightmove-scraper', 'testphoto1.jpeg', 'data/hello1.jpeg')

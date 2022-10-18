@@ -23,12 +23,12 @@ class Scraper:
     scraped_data (dict): dictionary to which scraped data is appended.
   '''
 
-  def __init__(self, start_url=None, cookies_alert_xpath =None, next_page_xpath=None,link_element_xpath=None):
+  def __init__(self, start_url=None, cookies_alert_xpath =None, next_page_xpath=None,link_element_xpath=None, headless=True):
     '''
     See help(Scraper) for accurate signature
     '''
     options = Options()
-    options.headless = True
+    options.headless = headless
     self.driver = webdriver.Chrome(options = options)
     self.start_url = start_url
     self.link_element_xpath = link_element_xpath
@@ -88,7 +88,7 @@ class Scraper:
       dict (dict): the dictionary being jsonified
       name (str): the name that the file will be saved as
     '''
-    with open(name, "w") as fp:
+    with open(f'data/{name}', "w") as fp:
       json.dump(dict, fp, indent=4)
 
 class RightmoveScraper(Scraper):
@@ -109,7 +109,7 @@ class RightmoveScraper(Scraper):
       time.sleep(0.3)
       self.get_and_store_links_from_list(self.link_element_xpath, self.link_list)
       self.find_and_click(self.next_page_xpath, 0.5)
-      print('Links scraped: ' + len(self.link_list))
+      print(f'Links scraped: {len(self.link_list)}')
 
   def scrape_data_from_link_list(self):
     '''
