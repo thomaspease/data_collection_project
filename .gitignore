@@ -2,4 +2,5 @@
 *.txt
 __pycache__
 data/*
-side_bits/*
+random/*
+.ipynb_checkpoints/*
