@@ -21,22 +21,28 @@ if __name__ == "__main__":
   # For each property in the list which has just been scraped, go to that page, scrape the data, and add it to a dictionary
   scraper.scrape_data_from_link_list()
 
+  rds_upserter = RDSUpserter()
+  for i in range(len(scraper.scraped_data)-1, -1, -1):
+    search_result = rds_upserter.search_for_id(scraper.scraped_data[i]["prop_id"])
+    if search_result:
+      scraper.scraped_data.pop(i)
+  
   #Save locally
   now = datetime.now()
   dt_string = now.strftime("%d%m%Y_%H%M%S")
   scraper.save_dictionary(scraper.scraped_data, f'data_{dt_string}.json')
 
   #Upload json to S3
-  s3_upserter = S3Upserter()
-  s3_upserter.upsert_json_from_data_folder(dt_string)
+  # s3_upserter = S3Upserter()
+  # s3_upserter.upsert_json_from_data_folder(dt_string)
 
-  rds_upserter = RDSUpserter()
-  rds_upserter.upsert(scraper.scraped_data)
+  # rds_upserter.upsert(scraper.scraped_data)
+
 
   #Loop through all image urls and upsert to S3
-  for properties in scraper.scraped_data:
-    prop_id = properties["prop_id"]
+  # for properties in scraper.scraped_data:
+  #   prop_id = properties["prop_id"]
 
-    for index, val in enumerate(properties["img_list"], start=1):
-      name = f'{prop_id}({index})'
-      s3_upserter.get_image_and_upsert(val, name)
+  #   for index, val in enumerate(properties["img_list"], start=1):
+  #     name = f'{prop_id}({index})'
+  #     s3_upserter.get_image_and_upsert(val, name)

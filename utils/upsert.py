@@ -3,7 +3,6 @@ import pandas as pd
 import boto3
 import json
 import requests
-import shutil
 
 class RDSUpserter():
   def __init__(self):
@@ -19,8 +18,12 @@ class RDSUpserter():
 
 
   def show_all_data(self, db):
-    df = pd.read_sql(f"select * from {db}", self.engine)
+    df = pd.read_sql(f"select prop_id from {db}", self.engine)
     print(df)
+
+  def search_for_id(self, prop_id):
+    thing = self.engine.execute(f'''SELECT * FROM all_data WHERE prop_id={prop_id}''').fetchall()
+    return thing
 
   def upsert(self, raw_list):
     jsonified_list = json.dumps(raw_list)
@@ -34,6 +37,7 @@ class RDSUpserter():
 class S3Upserter():
   def __init__(self):
     self.s3 = boto3.resource('s3')
+    self.client = boto3.client('s3')
   
   def upsert_json_from_data_folder(self, name):  
     try:
