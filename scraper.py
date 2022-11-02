@@ -106,10 +106,14 @@ class RightmoveScraper(Scraper):
       pages_to_scrape (int): the number of pages that links will be scraped from
     '''
     for pages in range(pages_to_scrape):
-      time.sleep(0.3)
-      self.get_and_store_links_from_list(self.link_element_xpath, self.link_list)
-      self.find_and_click(self.next_page_xpath, 0.5)
-      print(f'Links scraped: {len(self.link_list)}')
+      try:
+        time.sleep(0.5
+        )
+        self.get_and_store_links_from_list(self.link_element_xpath, self.link_list)
+        self.find_and_click(self.next_page_xpath, 0.5)
+        print(f'Links scraped: {len(self.link_list)}')
+      except:
+        pass
 
   def scrape_data_from_link_list(self):
     '''
